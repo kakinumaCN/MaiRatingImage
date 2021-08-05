@@ -30,7 +30,7 @@ def draw_plate_arc_style(img_, dic_):
     draw.polygon((275, 25, 525, 25, 575, 75, 275, 75), diff_color[dic_["level_label"]])
 
     # write dx rating
-    draw.text((275 + 20 , 25 + 8), " "+str(dic_["ra"])+" [" + str(dic_["ds"]) + "]", font=ImageFont.truetype('C:/windows/fonts/Dengb.ttf', 30), fill="#ffffff")
+    draw.text((275 + 20 , 25 + 5), " "+str(dic_["ra"])+"   (" + str(dic_["ds"]) + ")", font=ImageFont.truetype('C:/windows/fonts/Dengb.ttf', 40), fill="#ffffff")
 
     # write b rank
     draw.text((800 , 25 + 8),  "#" + str(i+1), font=ImageFont.truetype('C:/windows/fonts/Dengb.ttf', 45), fill="#000000")
@@ -38,11 +38,11 @@ def draw_plate_arc_style(img_, dic_):
 
     # draw 2
     # write title
-    draw.text((275 + 20, 25+50+25), dic_["title"], font=ImageFont.truetype('C:/windows/fonts/Deng.ttf', 44), fill="#000000")
+    draw.text((275 + 20, 25+50+25), dic_["title"], font=ImageFont.truetype('C:/windows/fonts/Deng.ttf', 48), fill="#000000")
 
     # draw 3
     # write score
-    draw.text((275 + 20, 25 + 50 + 25 + 60), str(dic_["achievements"]) + "%", font=ImageFont.truetype('C:/windows/fonts/ALGER.TTF', 54),fill="#000000")
+    draw.text((275 + 20, 25 + 50 + 25 + 60), str(dic_["achievements"]) + "%", font=ImageFont.truetype('C:/windows/fonts/ALGER.TTF', 58),fill="#000000")
 
     # draw score rank "rate": "sssp"
     score_rank_img = Image.open("./res/" + dic_["rate"] + ".png")
@@ -93,7 +93,7 @@ def draw_name_pad_mai_style(base_img_):
     draw = ImageDraw.Draw(rating_base_img)
     ra_sum = ra_sum_sd + ra_sum_dx21
     ra_sum_list = []
-    ra_pos_list = [(364 + 6,20),(321+ 6,20),(275+ 6,20),(228+ 6,20),(188+ 6,20)] # max 99999
+    ra_pos_list = [(364 + 6,18),(321+ 6,18),(275+ 6,18),(228+ 6,18),(188+ 6,18)] # max 99999
 
     while 1:
         r = ra_sum%10
@@ -102,7 +102,7 @@ def draw_name_pad_mai_style(base_img_):
         if 0 == ra_sum:
             break
     for i in range(len(ra_sum_list)):
-        draw.text(ra_pos_list[i],  str(ra_sum_list[i]), font=ImageFont.truetype('C:/windows/fonts/Dengb.ttf', 40), fill="#ffff00")
+        draw.text(ra_pos_list[i],  str(ra_sum_list[i]), font=ImageFont.truetype('C:/windows/fonts/BAUHS93.TTF', 42), fill="#eedd00")
     # paste rating base
     r, g, b, a = rating_base_img.split()
     name_pad_img.paste(rating_base_img, (20 + 250 + 10, 20), mask=a)
@@ -135,7 +135,8 @@ def draw_name_pad_mai_style(base_img_):
     r, g, b, a = trophy_img.split()
     name_pad_img.paste(trophy_img, (20 + 250 + 10, 20 + 85 + 5 + 105 +5), mask=a)
 
-    base_img_.paste(name_pad_img,(plate_edge,plate_edge))
+    r,g,b,a = name_pad_img.split()
+    base_img_.paste(name_pad_img,(plate_edge,plate_edge), mask=a)
 
 
 if __name__ == '__main__':
@@ -178,14 +179,20 @@ if __name__ == '__main__':
     plate_startY = plate_edge + plate_height + plate_interval
     for i in range(record_sd_num):
 
-        plate_img = Image.new('RGBA', (900, 300), (255, 255, 255, 255))
+        plate_img = Image.new('RGBA', (900, 300), (255, 255, 255, 0))
         plate_img.convert('RGBA')
+        draw = ImageDraw.Draw(plate_img)
+        drawRoundRec(draw, 0, 0, 900,300, 50, "#aaaaaa")
+        drawRoundRec(draw, 3, 3, 900 - 6, 300 - 6, 50, "#ffffff")
+
         draw_plate_arc_style(plate_img, record_sd_list[i])
         ra_sum_sd += record_sd_list[i]["ra"]
 
         x = plate_startX + i%2 * (plate_width + plate_interval)
         y = plate_startY + int(i/2) * (plate_height + plate_interval)
-        base_img.paste(plate_img, (x, y))
+
+        r,g,b,a = plate_img.split()
+        base_img.paste(plate_img, (x, y), mask=a)
         print("SD",i,x,y)
 
     # merge dx plate to base
@@ -193,8 +200,11 @@ if __name__ == '__main__':
     plate_startY = plate_edge
     for i in range(record_dx21_num):
 
-        plate_img = Image.new('RGBA', (900, 300), (255, 255, 255, 255))
+        plate_img = Image.new('RGBA', (900, 300), (255, 255, 255, 0))
         plate_img.convert('RGBA')
+        draw = ImageDraw.Draw(plate_img)
+        drawRoundRec(draw, 0, 0, 900, 300, 50, "#aaaaaa")
+        drawRoundRec(draw, 3, 3, 900 - 6, 300 - 6, 50, "#ffffff")
         draw_plate_arc_style(plate_img, record_dx21_list[i])
         ra_sum_dx21 += record_dx21_list[i]["ra"]
 
@@ -204,7 +214,9 @@ if __name__ == '__main__':
             # DX15 move to left*1 up*1 to align
             x -= (plate_width + plate_interval)
             y -= (plate_height + plate_interval)
-        base_img.paste(plate_img, (x, y))
+
+        r,g,b,a = plate_img.split()
+        base_img.paste(plate_img, (x, y), mask=a)
         print("DX",i,x, y)
 
     draw_name_pad_mai_style(base_img)
