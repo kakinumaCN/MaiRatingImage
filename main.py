@@ -33,7 +33,7 @@ def draw_plate_arc_style(img_, dic_):
     draw.text((275 + 20 , 25 + 8), " "+str(dic_["ra"])+" [" + str(dic_["ds"]) + "]", font=ImageFont.truetype('C:/windows/fonts/Dengb.ttf', 30), fill="#ffffff")
 
     # write b rank
-    draw.text((800 , 25 + 8),  "#" + str(i+1), font=ImageFont.truetype('C:/windows/fonts/Dengb.ttf', 30), fill="#000000")
+    draw.text((800 , 25 + 8),  "#" + str(i+1), font=ImageFont.truetype('C:/windows/fonts/Dengb.ttf', 45), fill="#000000")
     print(str(i))
 
     # draw 2
@@ -91,8 +91,18 @@ def draw_name_pad_mai_style(base_img_):
     rating_base_img = rating_base_img.resize((425, 85), Image.ANTIALIAS)
     # write rating
     draw = ImageDraw.Draw(rating_base_img)
-    rating = 9999
-    draw.text((166 +25 , 21-5),  str(rating), font=ImageFont.truetype('C:/windows/fonts/Dengb.ttf', 40), fill="#ffffff")
+    ra_sum = ra_sum_sd + ra_sum_dx21
+    ra_sum_list = []
+    ra_pos_list = [(364 + 6,20),(321+ 6,20),(275+ 6,20),(228+ 6,20),(188+ 6,20)] # max 99999
+
+    while 1:
+        r = ra_sum%10
+        ra_sum_list.append(r)
+        ra_sum = int(ra_sum/10)
+        if 0 == ra_sum:
+            break
+    for i in range(len(ra_sum_list)):
+        draw.text(ra_pos_list[i],  str(ra_sum_list[i]), font=ImageFont.truetype('C:/windows/fonts/Dengb.ttf', 40), fill="#ffff00")
     # paste rating base
     r, g, b, a = rating_base_img.split()
     name_pad_img.paste(rating_base_img, (20 + 250 + 10, 20), mask=a)
@@ -120,7 +130,7 @@ def draw_name_pad_mai_style(base_img_):
     # write rating on trophy
     draw = ImageDraw.Draw(trophy_img)
     # draw.text((20, 7), "Standard:2222    DX2021:3333", font=ImageFont.truetype('C:/windows/fonts/Dengb.ttf', 40), fill="#333333")
-    draw.text((20, 7), "By Kakinuma MaiRating Image", font=ImageFont.truetype('C:/windows/fonts/Dengb.ttf', 38), fill="#333333")
+    draw.text((20, 7), "Kakinuma/maimai_DX_rating_image", font=ImageFont.truetype('C:/windows/fonts/Dengb.ttf', 38), fill="#333333")
     # paste trophy
     r, g, b, a = trophy_img.split()
     name_pad_img.paste(trophy_img, (20 + 250 + 10, 20 + 85 + 5 + 105 +5), mask=a)
@@ -163,8 +173,6 @@ if __name__ == '__main__':
     # load base = 3*14 plate
     base_img = Image.new('RGBA', (plate_width*3+plate_interval*2+plate_edge*2, plate_height*14+plate_interval*13+plate_edge*2),(81,188,243,255))
 
-    draw_name_pad_mai_style(base_img)
-
     # merge sd plate to base
     plate_startX = plate_edge
     plate_startY = plate_edge + plate_height + plate_interval
@@ -198,5 +206,9 @@ if __name__ == '__main__':
             y -= (plate_height + plate_interval)
         base_img.paste(plate_img, (x, y))
         print("DX",i,x, y)
+
+    draw_name_pad_mai_style(base_img)
     base_img.save("./out.png")
+
     print(ra_sum_sd,ra_sum_dx21)
+    
