@@ -2,6 +2,17 @@
 
 from PIL import Image,ImageFont,ImageDraw
 import json
+import cover
+import time
+from io import BytesIO
+
+
+def paste_with_a(base_img_, img_, pos):
+    if 4 == len(img_.split()):
+        r,g,b,a = img_.split()
+        base_img_.paste(img_, pos,mask=a)
+    else:
+        base_img_.paste(img_, pos)
 
 
 def drawRoundRec(drawObject, x, y, w, h, r, fill_color):
@@ -21,9 +32,18 @@ def draw_plate_arc_style(img_, dic_):
 
     # draw 1
     # draw cover
-    gd_img = Image.open("./res/gd.png")
-    gd_img = gd_img.resize((250, 250), Image.ANTIALIAS)
-    img_.paste(gd_img,(25,25))
+
+    # @brief
+    # wiki url will use "_" to replace " "
+    # display " " in mai_rating_img but will use "_" to download cover
+    # however cover.download will save img with "_" (cause ues "_" as param in cover.download())
+    wiki_title  = dic_["title"].replace(" ", "_")
+    if 0 < cover.download_cover(wiki_title):
+        cover_img = Image.open("./cover/"+wiki_title+".png")
+    else:
+        cover_img = Image.open("./res/" + "gd" + ".png")
+    cover_img = cover_img.resize((250, 250), Image.ANTIALIAS)
+    paste_with_a(img_,cover_img,(25,25))
 
     # draw rating base
     # master 159 81 220
@@ -46,45 +66,40 @@ def draw_plate_arc_style(img_, dic_):
 
     # draw score rank "rate": "sssp"
     score_rank_img = Image.open("./res/" + dic_["rate"] + ".png")
-    r, g, b, a = score_rank_img.split()
-    img_.paste(score_rank_img,(625, 25 + 50 + 25 + 60 - 20),mask=a)
-
+    paste_with_a(img_, score_rank_img, (625, 25 + 50 + 25 + 60 - 20))
 
     #draw 4
     #draw type "type": "SD"
     music_type_img = Image.open("./res/" + dic_["type"] + ".png")
-    r, g, b, a = music_type_img.split()
-    img_.paste(music_type_img, (275 + 20, 25 + 50 + 25 + 60 + 90), mask=a)
+    paste_with_a(img_, music_type_img, (275 + 20, 25 + 50 + 25 + 60 + 90))
 
     #draw fc "fc": "fcp"
     if len(dic_["fc"]) > 0:
         fc_img = Image.open("./res/" + dic_["fc"] + ".png")
     else:
         fc_img = Image.open("./res/" + "fc_dummy" + ".png")
-    r, g, b, a = fc_img.split()
-    img_.paste(fc_img, (275 + 20 + 150, 25 + 50 + 25 + 60 + 90 - 8), mask=a)
+    paste_with_a(img_, fc_img, (275 + 20 + 150, 25 + 50 + 25 + 60 + 90 - 8))
 
     # #draw fs "fs": ""
     if len(dic_["fs"]) > 0:
         fs_img = Image.open("./res/" + dic_["fs"] + ".png")
     else:
         fs_img = Image.open("./res/" + "fs_dummy" + ".png")
-    r, g, b, a = fs_img.split()
-    img_.paste(fs_img, (275 + 20 + 150 + 150 , 25 + 50 + 25 + 60 + 90 - 15), mask=a)
+    paste_with_a(img_, fs_img, (275 + 20 + 150 + 150 , 25 + 50 + 25 + 60 + 90 - 15))
 
 
 def draw_name_pad_mai_style(base_img_):
+
     # draw name pad
     # load res
-    name_pad_img = Image.open("./res/name_pad.png")
+    name_pad_img = Image.open("./res/name_pad/"+user_dic["name_pad"]+".png")
     name_pad_img.convert('RGBA')
     name_pad_img = name_pad_img.resize((1800, 300), Image.ANTIALIAS)
 
     # draw ava
-    ava_img = Image.open("./res/ava.png")
+    ava_img = Image.open("./res/ava/"+user_dic["ava"]+".png")
     ava_img = ava_img.resize((250, 260), Image.ANTIALIAS)
-    r, g, b, a = ava_img.split()
-    name_pad_img.paste(ava_img, (20, 20), mask=a)
+    paste_with_a(name_pad_img, ava_img, (20,20))
 
     # draw rating base
     rating_base_img = Image.open("./res/rating_base_rainbow.png")
@@ -104,14 +119,13 @@ def draw_name_pad_mai_style(base_img_):
     for i in range(len(ra_sum_list)):
         draw.text(ra_pos_list[i],  str(ra_sum_list[i]), font=ImageFont.truetype('C:/windows/fonts/BAUHS93.TTF', 42), fill="#eedd00")
     # paste rating base
-    r, g, b, a = rating_base_img.split()
-    name_pad_img.paste(rating_base_img, (20 + 250 + 10, 20), mask=a)
+    paste_with_a(name_pad_img,rating_base_img,(20 + 250 + 10, 20))
 
     # draw mai_logo
     maimai_img = Image.open("./res/logo.png")
     maimai_img = maimai_img.resize((int(110 * 16 / 9), 110), Image.ANTIALIAS)
-    r, g, b, a = maimai_img.split()
-    name_pad_img.paste(maimai_img, (20 + 250 + 10 + 425 + 10, 5), mask=a)
+    paste_with_a(name_pad_img,maimai_img,(20 + 250 + 10 + 425 + 10, 5))
+
 
     # draw name base
     name_base_img = Image.new('RGBA', (900 - 225, 105), (255, 255, 255, 0))
@@ -119,10 +133,10 @@ def draw_name_pad_mai_style(base_img_):
     draw = ImageDraw.Draw(name_base_img)
     drawRoundRec(draw,0,0,900 - 225, 105,25,"#666666")
     drawRoundRec(draw, 3, 3, 900 - 225-6, 105-6, 25, "#ffffff")
-    draw.text((10 , 10),  "Kakinuma", font=ImageFont.truetype('C:/windows/fonts/ALGER.TTF', 72), fill="#000000")
+    draw.text((10 , 10),  user_dic["name"], font=ImageFont.truetype('C:/windows/fonts/ALGER.TTF', 72), fill="#000000")
     # paste name base
-    r,g,b,a = name_base_img.split()
-    name_pad_img.paste(name_base_img,(20 + 250 + 10, 20 + 85 + 5) ,mask=a)
+    paste_with_a(name_pad_img,name_base_img, (20 + 250 + 10, 20 + 85 + 5))
+
 
     #draw trophy
     trophy_img = Image.open("./res/trophy.png")
@@ -132,16 +146,18 @@ def draw_name_pad_mai_style(base_img_):
     # draw.text((20, 7), "Standard:2222    DX2021:3333", font=ImageFont.truetype('C:/windows/fonts/Dengb.ttf', 40), fill="#333333")
     draw.text((20, 7), "Kakinuma/maimai_DX_rating_image", font=ImageFont.truetype('C:/windows/fonts/Dengb.ttf', 38), fill="#333333")
     # paste trophy
-    r, g, b, a = trophy_img.split()
-    name_pad_img.paste(trophy_img, (20 + 250 + 10, 20 + 85 + 5 + 105 +5), mask=a)
+    paste_with_a(name_pad_img,trophy_img,(20 + 250 + 10, 20 + 85 + 5 + 105 +5))
 
-    r,g,b,a = name_pad_img.split()
-    base_img_.paste(name_pad_img,(plate_edge,plate_edge), mask=a)
+    #paste name_pad
+    paste_with_a(base_img_,name_pad_img,(plate_edge,plate_edge))
 
 
 if __name__ == '__main__':
+    # load user
+    user_dic = {"name":"rain","ava":"rain","name_pad":"150603"}
+
     # load json
-    with open("./res/my.json", 'r', encoding='utf-8') as load_f:
+    with open("./data/"+user_dic["name"]+".json", 'r', encoding='utf-8') as load_f:
         load_dict = json.load(load_f)
     record_list = load_dict["records"]
 
@@ -191,8 +207,7 @@ if __name__ == '__main__':
         x = plate_startX + i%2 * (plate_width + plate_interval)
         y = plate_startY + int(i/2) * (plate_height + plate_interval)
 
-        r,g,b,a = plate_img.split()
-        base_img.paste(plate_img, (x, y), mask=a)
+        paste_with_a(base_img,plate_img,(x, y))
         print("SD",i,x,y)
 
     # merge dx plate to base
@@ -215,12 +230,10 @@ if __name__ == '__main__':
             x -= (plate_width + plate_interval)
             y -= (plate_height + plate_interval)
 
-        r,g,b,a = plate_img.split()
-        base_img.paste(plate_img, (x, y), mask=a)
+        paste_with_a(base_img,plate_img,(x, y))
         print("DX",i,x, y)
 
     draw_name_pad_mai_style(base_img)
     base_img.save("./out.png")
 
     print(ra_sum_sd,ra_sum_dx21)
-    
